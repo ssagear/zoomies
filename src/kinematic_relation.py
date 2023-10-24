@@ -25,7 +25,7 @@ numpyro.set_host_device_count(4)
 
 import arviz as az
 
-from quick_jz import calc_jz
+from src.quick_jz import calc_jz
 
 
 def find_nearest(array, value):

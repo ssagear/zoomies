@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "age_prediction_tool"
+version = "0.0.1"
+authors = [
+  { name="Sheila Sagear", email="ssagearastro@gmail.com" },
+]
+description = "Age prediction tool woohoo"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/ssagear/age_prediction_tool"
