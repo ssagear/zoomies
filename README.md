@@ -7,3 +7,4 @@ git clone https://github.com/ssagear/KinematicAgePredictor
 cd KinematicAgePredictor
 pip install .
 
+Under active development proceed with caution 
