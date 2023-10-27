@@ -43,7 +43,7 @@ def read(directory='spline_model/', trace_path="trace.nc", training_path="calibr
     kinage_spline = KinematicAgeSpline(np.array(training_data['lnJz']), np.array(training_data['ages']), np.array(training_data['age_err']))
     kinage_spline.ln_dens_knots = np.array(ln_dens_knot_vals['ln_dens_knots'])
     kinage_spline.age_knots = np.array(age_knot_vals['age_knots'])
-    kinage_spline.inf_data = az.from_netcdf(trace_path)
+    kinage_spline.inf_data = az.from_netcdf(directory + trace_path)
 
     return kinage_spline
 
@@ -118,6 +118,7 @@ class KinematicAgeSpline:
 
         return f
 
+
     def truncated_density_quadratic_model(self, age, age_err, lnJz, age_knots, ln_dens_knots):
         """Monotonic spline with truncated likelihood, scatter and Poisson density"""
 
@@ -128,10 +129,8 @@ class KinematicAgeSpline:
         # lnJz vs age spline
         K_knots_age = len(age_knots)
         age_knot_vals = numpyro.sample("age_knot_vals", dist.Uniform(jnp.concatenate((jnp.array([-4.]), jnp.full(K_knots_age-1, 0.))), jnp.full(K_knots_age, 5.)))
-        #age_knot_vals = numpyro.sample("age_knot_vals", dist.Uniform(jnp.concatenate((jnp.array([-4.]), jnp.full(K_knots_age-1, 0.))), jnp.full(K_knots_age, 8.)))
 
         # intrinsic scatter
-        #lnV = numpyro.sample("lnV", dist.Normal(1, 1))
         lnV = numpyro.sample("lnV", dist.Normal(9,5))
         V = numpyro.deterministic("V", jnp.exp(lnV))
 
@@ -144,24 +143,26 @@ class KinematicAgeSpline:
         V_eff = simpson(lambda x: jnp.exp(ln_dens_func(x)), 0.0, 15, N=256)
         numpyro.factor("poisson", ln_rate - V_eff)
 
-        # put a deterministic in the numpyro model -- 
-        # optional argument passed into - ln Jz-age grid. if defined, evaluate # density
-
         with numpyro.plate("data", len(age)):
 
             true_age = numpyro.sample("true_age", dist.TruncatedNormal(age, age_err, low=0, high=14), obs=age)
             numpyro.sample("lnJz_pred", dist.Normal(self.monotonic_quadratic_spline(age_knots, age_knot_vals, true_age), jnp.sqrt(V)), obs=lnJz)
 
+        
+    def set_initial_knots(self, age_knots, ln_dens_knots):
+        """This is just a helper function to set the intiial (not fit) knot attributes"""
+        
+        self.age_knots = age_knots
+        self.ln_dens_knots = ln_dens_knots
 
 
     def fit_mono_spline(self, ln_dens_knots=jnp.linspace(-1, 15, 15), age_knots=jnp.linspace(-1, 14, 5),\
                         num_warmup=1000, num_samples=1000, num_chains=2, progress_bar=True):
         
         import arviz as az
-        
-        self.ln_dens_knots = ln_dens_knots
-        self.age_knots = age_knots
-        
+
+        self.set_initial_knots(age_knots, ln_dens_knots)
+
         dens_sampler = infer.MCMC(
             infer.NUTS(self.truncated_density_quadratic_model),
             num_warmup=num_warmup,
@@ -217,7 +218,7 @@ class KinematicAgeSpline:
         """Evaluate the spline for a given posterior index (k) over a grid"""
 
         self.grid = eval_grid
-        # self.eval_spline = self.monotonic_quadratic_spline(self.age_knots, self.dens_sampler.get_samples()['age_knot_vals'][k], eval_grid)
+        
         age_knot_val_samples = self.inf_data.posterior['age_knot_vals'].values.reshape(-1, self.inf_data.posterior['age_knot_vals'].values.shape[-1])
         self.eval_spline = self.monotonic_quadratic_spline(self.age_knots, age_knot_val_samples[k], eval_grid)
 
@@ -249,19 +250,11 @@ class KinematicAgeSpline:
 
         if not hasattr(self, 'eval_spline'):
             self.evaluate_spline(eval_grid=eval_grid, k=0)
-
-        # self.age_knot_vals = self.dens_sampler.get_samples()['age_knot_vals'][k]
-        # self.V_samp = np.exp(self.dens_sampler.get_samples()['lnV'][k])
         
         self.age_knot_vals = self.inf_data.posterior['age_knot_vals'].values.reshape(-1, self.inf_data.posterior['age_knot_vals'].values.shape[-1])[k]
         self.V_samp = np.exp(self.inf_data.posterior['lnV'].values.reshape(-1)[k])
 
-        # return
-
         eval_pdf = []
-        # i16 = []
-        # i50 = []
-        # i84 = []
 
         if isinstance(lnJz_sample, float) or isinstance(lnJz_sample, int):
 
@@ -270,10 +263,6 @@ class KinematicAgeSpline:
             P /= scipy_simpson(x=eval_grid, y=P)
 
             eval_pdf = P
-
-            # i16 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.16).argmin()
-            # i50 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.50).argmin()
-            # i84 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.84).argmin()
 
         else:
 
@@ -284,14 +273,10 @@ class KinematicAgeSpline:
 
                 eval_pdf.append(P)
 
-                # i16.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.16).argmin())
-                # i50.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.50).argmin())
-                # i84.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.84).argmin())
-
         self.eval_grid = eval_grid
         self.eval_pdf = np.array(eval_pdf)
 
-        return eval_grid, np.array(eval_pdf)# , np.array(i16), np.array(i50), np.array(i84)
+        return eval_grid, np.array(eval_pdf)
         
 
     def get_mode_and_percentiles(self, eval_pdf, eval_grid=np.linspace(0, 14, 1000)):
