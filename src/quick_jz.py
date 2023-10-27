@@ -1,5 +1,4 @@
 
-
 def calc_jz(gaia_table, write=False, fname=None):
 
     """

@@ -25,7 +25,28 @@ numpyro.set_host_device_count(4)
 
 import arviz as az
 
-from src.quick_jz import calc_jz
+from .quick_jz import calc_jz
+
+
+def read(directory='spline_model/', trace_path="trace.nc", training_path="calibration_data.csv", ln_dens_knots_path="ln_dens_knots.csv", age_knots_path="age_knots.csv"):
+    """
+    Opens spline object with trace netCDF fit file and yml file with calibration data.
+    trace_path is a string with path to save trace file.
+    yml_path is to save yml file
+    """
+    import pandas
+
+    training_data = pd.read_csv(directory + training_path)
+    ln_dens_knot_vals = pd.read_csv(directory + ln_dens_knots_path)
+    age_knot_vals = pd.read_csv(directory + age_knots_path)
+
+    kinage_spline = KinematicAgeSpline(np.array(training_data['lnJz']), np.array(training_data['ages']), np.array(training_data['age_err']))
+    kinage_spline.ln_dens_knots = np.array(ln_dens_knot_vals['ln_dens_knots'])
+    kinage_spline.age_knots = np.array(age_knot_vals['age_knots'])
+    kinage_spline.inf_data = az.from_netcdf(trace_path)
+
+    return kinage_spline
+
 
 
 def find_nearest(array, value):
@@ -44,6 +65,9 @@ def find_nearest_index(array, value):
 class KinematicAgeSpline:
 
     def __init__(self, lnJz, age, age_err):
+
+        # You shouldn't have to define calibration sample to initialize
+        # class unless you are fitting the model?? maybe
 
         self.lnJz = lnJz
         self.age = age
@@ -162,11 +186,40 @@ class KinematicAgeSpline:
         self.inf_data = inf_data
 
 
+    def write(self, directory='spline_model/', trace_path="trace.nc", training_path="calibration_data.csv", ln_dens_knots_path="ln_dens_knots.csv", age_knots_path="age_knots.csv"):
+        """
+        Saves trace netCDF fit file and csv file with calibration data.
+        trace_path is a string with path to save trace file.
+        csv is to save csv file"""
+
+        import pandas as pd
+        from pathlib import Path
+
+        Path(directory).mkdir(parents=True, exist_ok=True)
+
+        training_data = {'ages': self.age, 'age_err': self.age_err, 'lnJz': self.lnJz}
+        training_df = pd.DataFrame(training_data) 
+        training_df.to_csv(directory + training_path)
+
+        ln_dens_knot_vals = {"ln_dens_knots": self.ln_dens_knots}
+        ln_dens_knot_vals_df = pd.DataFrame(ln_dens_knot_vals) 
+        ln_dens_knot_vals_df.to_csv(directory + ln_dens_knots_path)
+
+        age_knot_vals = {"age_knots": self.age_knots}
+        age_knot_vals_df = pd.DataFrame(age_knot_vals) 
+        age_knot_vals_df.to_csv(directory + age_knots_path)
+
+        az.to_netcdf(self.inf_data, directory + trace_path)
+
+
+
     def evaluate_spline(self, eval_grid=np.linspace(0, 14, 1000), k=0):
         """Evaluate the spline for a given posterior index (k) over a grid"""
 
         self.grid = eval_grid
-        self.eval_spline = self.monotonic_quadratic_spline(self.age_knots, self.dens_sampler.get_samples()['age_knot_vals'][k], eval_grid)
+        # self.eval_spline = self.monotonic_quadratic_spline(self.age_knots, self.dens_sampler.get_samples()['age_knot_vals'][k], eval_grid)
+        age_knot_val_samples = self.inf_data.posterior['age_knot_vals'].values.reshape(-1, self.inf_data.posterior['age_knot_vals'].values.shape[-1])
+        self.eval_spline = self.monotonic_quadratic_spline(self.age_knots, age_knot_val_samples[k], eval_grid)
 
 
     def plot_fit(self, Jz_age_bins=(np.linspace(-4, 6, 32), np.linspace(0, 14, 32)), eval_grid=np.linspace(0, 14, 1000)):
@@ -186,6 +239,7 @@ class KinematicAgeSpline:
         plt.show()
 
 
+
     def evaluate_ages(self, lnJz_sample, eval_grid=np.linspace(0, 14, 1000), k=0):
         """Evaluate the age posterior for a given posterior index (k) and given lnJz over a grid"""
 
@@ -196,15 +250,18 @@ class KinematicAgeSpline:
         if not hasattr(self, 'eval_spline'):
             self.evaluate_spline(eval_grid=eval_grid, k=0)
 
-        self.age_knot_vals = self.dens_sampler.get_samples()['age_knot_vals'][k]
-        self.V_samp = np.exp(self.dens_sampler.get_samples()['lnV'][k])
+        # self.age_knot_vals = self.dens_sampler.get_samples()['age_knot_vals'][k]
+        # self.V_samp = np.exp(self.dens_sampler.get_samples()['lnV'][k])
         
+        self.age_knot_vals = self.inf_data.posterior['age_knot_vals'].values.reshape(-1, self.inf_data.posterior['age_knot_vals'].values.shape[-1])[k]
+        self.V_samp = np.exp(self.inf_data.posterior['lnV'].values.reshape(-1)[k])
+
+        # return
 
         eval_pdf = []
-        i16 = []
-        i50 = []
-        i84 = []
-        a_arr = []
+        # i16 = []
+        # i50 = []
+        # i84 = []
 
         if isinstance(lnJz_sample, float) or isinstance(lnJz_sample, int):
 
@@ -214,9 +271,9 @@ class KinematicAgeSpline:
 
             eval_pdf = P
 
-            i16 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.16).argmin()
-            i50 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.50).argmin()
-            i84 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.84).argmin()
+            # i16 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.16).argmin()
+            # i50 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.50).argmin()
+            # i84 = np.abs(np.cumsum(np.diff(eval_grid)[0] * P) - 0.84).argmin()
 
         else:
 
@@ -227,21 +284,19 @@ class KinematicAgeSpline:
 
                 eval_pdf.append(P)
 
-                i16.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.16).argmin())
-                i50.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.50).argmin())
-                i84.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.84).argmin())
+                # i16.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.16).argmin())
+                # i50.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.50).argmin())
+                # i84.append(np.abs(np.cumsum(np.diff(self.grid)[0] * P) - 0.84).argmin())
 
         self.eval_grid = eval_grid
         self.eval_pdf = np.array(eval_pdf)
 
-        return eval_grid, np.array(eval_pdf), np.array(i16), np.array(i50), np.array(i84)
+        return eval_grid, np.array(eval_pdf)# , np.array(i16), np.array(i50), np.array(i84)
         
 
     def get_mode_and_percentiles(self, eval_pdf, eval_grid=np.linspace(0, 14, 1000)):
 
         from tqdm import tqdm
-
-        
 
         full_results = []
 
@@ -328,6 +383,7 @@ class KinematicAgeSpline:
             return modes[0], sigmas[0], lerr[0], uerr[0]
         
         return modes, sigmas, lerr, uerr
+
         
 
 
