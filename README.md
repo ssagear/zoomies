@@ -9,6 +9,6 @@ git clone https://github.com/ssagear/zoomies
 
 cd zoomies
 
-pip install .
+pip install zoomies
 ```
 Under active development proceed with caution 

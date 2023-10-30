@@ -17,5 +17,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+dependencies = ['numpy', 'astropy', 'matplotlib', 'tqdm', 'pandas', 'corner', 'pickle', 'pyia', 'jax', 'jax_cosmo', 'gala']
+
+
 [project.urls]
-"Homepage" = "https://github.com/ssagear/zoomies"
+"repository" = "https://github.com/ssagear/zoomies"
