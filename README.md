@@ -5,13 +5,10 @@ Stars get the zoomies too. This is a kinematic age prediction package that uses 
 To install: 
 
 ```
-{
 git clone https://github.com/ssagear/zoomies
 
 cd zoomies
 
 pip install .
-
-}
 ```
 Under active development proceed with caution 
