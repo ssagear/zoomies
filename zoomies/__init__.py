@@ -1,5 +1,5 @@
 """
-This is the __init__.py file for age_prediction_tool
+This is the __init__.py file for zoomies
 """
 
 __version__ = "0.0.1"
