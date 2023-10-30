@@ -1,6 +1,5 @@
 import warnings
 from astropy.utils.exceptions import AstropyWarning
-warnings.simplefilter('ignore', category=AstropyWarning)
 
 import astropy.units as u
 import numpy as np
