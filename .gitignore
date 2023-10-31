@@ -1,2 +1,3 @@
 # temp spline model pickle files
 *.pickle
+dist/*
