@@ -40,11 +40,11 @@ def calc_jz(gaia_table, write=False, fname=None):
     aaf = galpy_find_actions_staeckel(mw, w)
     Jz = aaf['actions'][:, 2]
     Jphi = aaf['actions'][:, 1]
-    Jtheta = aaf['actions'][:, 0]
+    Jr = aaf['actions'][:, 0]
 
     gaia_table['Jz'] = Jz
     gaia_table['Jphi'] = Jphi
-    gaia_table['Jtheta'] = Jtheta
+    gaia_table['Jr'] = Jr
 
     if write==False:
         return gaia_table
