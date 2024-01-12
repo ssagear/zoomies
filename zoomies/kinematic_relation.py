@@ -257,8 +257,7 @@ class KinematicAgeSpline:
 
         if isinstance(lnJz_sample, float) or isinstance(lnJz_sample, int):
 
-            logP = norm.logpdf(lnJz_sample, loc=self.eval_spline, scale=np.sqrt(self.V_samp))
-            P = np.exp(logP)
+            P = norm.pdf(lnJz_sample, loc=self.eval_spline, scale=np.sqrt(self.V_samp))
             P /= scipy_simpson(x=eval_grid, y=P)
 
             eval_pdf = P
@@ -266,8 +265,7 @@ class KinematicAgeSpline:
         else:
 
             for n in tqdm(range(len(lnJz_sample))):
-                logP = norm.logpdf(lnJz_sample[n], loc=self.eval_spline, scale=np.sqrt(self.V_samp))
-                P = np.exp(logP)
+                P = norm.pdf(lnJz_sample[n], loc=self.eval_spline, scale=np.sqrt(self.V_samp))
                 P /= scipy_simpson(x=self.grid, y=P)
 
                 eval_pdf.append(P)
