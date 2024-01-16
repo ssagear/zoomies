@@ -34,6 +34,7 @@ def calc_jz(gaia_table, write=False, fname=None):
 
     g = GaiaData(gaia_table)
     mw = gp.MilkyWayPotential2022()
+    print('MW 2022')
     c = g.get_skycoord()
     galcen = c.transform_to(coord.Galactocentric(galcen_v_sun=[8, 254, 8] * u.km / u.s, galcen_distance=8.275 * u.kpc))
     w = gd.PhaseSpacePosition(galcen.data)

@@ -266,7 +266,7 @@ class KinematicAgeSpline:
 
             for n in tqdm(range(len(lnJz_sample))):
                 P = norm.pdf(lnJz_sample[n], loc=self.eval_spline, scale=np.sqrt(self.V_samp))
-                P /= scipy_simpson(x=self.grid, y=P)
+                P /= scipy_simpson(x=eval_grid, y=P)
 
                 eval_pdf.append(P)
 
