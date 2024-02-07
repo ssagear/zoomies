@@ -1,5 +1,5 @@
 
-def calc_jz(gaia_table, write=False, fname=None):
+def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None):
 
     """
     Calculates Jz using Gala for a star with a row of Gaia data.
@@ -21,7 +21,6 @@ def calc_jz(gaia_table, write=False, fname=None):
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     import numpy as np
-    from scipy.stats import binned_statistic_2d
 
     # gala
     import gala.coordinates as gc
@@ -31,17 +30,46 @@ def calc_jz(gaia_table, write=False, fname=None):
     from gala.dynamics.actionangle.tests.staeckel_helpers import galpy_find_actions_staeckel
     from pyia import GaiaData
 
+    import os
+    os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 
     g = GaiaData(gaia_table)
-    mw = gp.MilkyWayPotential2022()
-    print('MW 2022')
+
+    if mwmodel == '2022':
+        mw = gp.MilkyWayPotential2022()
+        # print('Using MW 2022 model...')
+
+    else:
+        # print('Warning: using old MW potential')
+        mw = gp.MilkyWayPotential()
+    
     c = g.get_skycoord()
     galcen = c.transform_to(coord.Galactocentric(galcen_v_sun=[8, 254, 8] * u.km / u.s, galcen_distance=8.275 * u.kpc))
     w = gd.PhaseSpacePosition(galcen.data)
-    aaf = galpy_find_actions_staeckel(mw, w)
-    Jz = aaf['actions'][:, 2]
-    Jphi = aaf['actions'][:, 1]
-    Jr = aaf['actions'][:, 0]
+
+    if method=='galpy':
+
+        # print('Calculating actions with galpy...')
+
+        aaf = galpy_find_actions_staeckel(mw, w)
+        Jz = aaf['actions'][:, 2]
+        Jphi = aaf['actions'][:, 1]
+        Jr = aaf['actions'][:, 0]
+
+    elif method=='agama':
+
+        # print('Calculating actions with agama...')
+
+        import agama
+
+        agama.setUnits(mass=u.Msun, length=u.kpc, time=u.Myr)
+        agama_pot = mw.as_interop("agama")
+        af = agama.ActionFinder(agama_pot)
+        Jr, Jz, Jphi = af(w.w(galactic).T).T * 1000 # agama units are different from galpy
+        
+    else:
+        print('you have to pick galpy or agama')
 
     gaia_table['Jz'] = Jz
     gaia_table['Jphi'] = Jphi
