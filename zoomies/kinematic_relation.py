@@ -137,12 +137,10 @@ class KinematicAgeSpline:
         K_knots_ln_dens = len(ln_dens_knots)
         ln_dens_knot_vals = numpyro.sample("dens_knot_vals", dist.Uniform(jnp.full(K_knots_ln_dens, -10), jnp.full(K_knots_ln_dens, 15)))
 
-        # spline(x, y)
-        # What goes into poisson factor? MSTO Age
+        # Poisson factor
         ln_dens_func = spline(ln_dens_knots, ln_dens_knot_vals)
-        ln_rate = jnp.sum(ln_dens_func(age)) # spline(ln_dens_knots, ln_dens_knot_vals)(MSTOage) density spline evaluated across MSTO ages
-        # jax cosmo scipy integrate: function, low, high, number of subintervals
-        V_eff = simpson(lambda x: jnp.exp(ln_dens_func(x)), 0.0, 15, N=256) # integrate exp(spline(ln_dens_knots, ln_dens_knot_vals)(x)) from 0 to 15
+        ln_rate = jnp.sum(ln_dens_func(age))
+        V_eff = simpson(lambda x: jnp.exp(ln_dens_func(x)), 0.0, 15, N=256)
         numpyro.factor("poisson", ln_rate - V_eff)
 
         with numpyro.plate("data", len(age)):
