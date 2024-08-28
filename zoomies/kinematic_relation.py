@@ -242,7 +242,20 @@ class KinematicAgeSpline:
 
 
     def evaluate_spline(self, eval_grid=np.linspace(0, 14, 1000), k=0):
-        """Evaluate the spline for a given posterior index (k) over a grid"""
+        """
+        Evaluate the spline for a given posterior index over a grid of possible ages.
+
+        Parameters
+        ---------
+        eval_grid : np.array
+            Grid of test ages (Gyr) over which to evaluate age--lnJz spline model. Default ranges from 0 to 14 Gyr.
+        k : int
+            Posterior index
+
+        Returns
+        -------
+        None
+        """
 
         self.grid = eval_grid
         
@@ -251,6 +264,21 @@ class KinematicAgeSpline:
 
 
     def plot_fit(self, Jz_age_bins=(np.linspace(-4, 6, 32), np.linspace(0, 14, 32)), eval_grid=np.linspace(0, 14, 1000)):
+        """
+        Plot the age--lnJz spline model over the calibration data.
+
+        Parameters
+        ---------
+        Jz_age_bins : np.array
+
+        eval_grid : np.array
+            Grid of test ages (Gyr) over which to evaluate age--lnJz spline model. Default ranges from 0 to 14 Gyr.
+
+        Returns
+        -------
+        None
+        (Make this return the figure object)
+        """
 
         if not hasattr(self, 'eval_spline'):
             self.evaluate_spline(eval_grid=eval_grid, k=0)
@@ -269,7 +297,25 @@ class KinematicAgeSpline:
 
 
     def evaluate_ages(self, lnJz_sample, eval_grid=np.linspace(0, 14, 1000), k=0):
-        """Evaluate the age posterior for a given posterior index (k) and given lnJz over a grid"""
+        """
+        Evaluate the age probability distribution over a grid of possible ages (default 0 to 14 Gyr) for a chosen lnJz value of sample.
+
+        Parameters
+        ---------
+        lnJz_sample : float or np.array
+            lnJz value(s) for which to evaluate age probability distribution(s).
+        eval_grid : np.array
+            Grid of test ages (Gyr) over which to evaluate age--lnJz spline model. Default ranges from 0 to 14 Gyr.
+        k : int
+            Posterior index
+
+        Returns
+        -------
+        eval_grid : np.array
+            eval_grid age array input above (x-axis of age probability distribution)
+        eval_pdf : np.array
+            Age probabilities associated with each eval_grid point (y-axis of age probability distribution) 
+        """
 
         from scipy.stats import norm
         from scipy.integrate import simpson as scipy_simpson
