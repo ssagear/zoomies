@@ -65,8 +65,8 @@ class KinematicAgeSpline:
 
     def __init__(self, lnJz, age, age_err):
 
-        # You shouldn't have to define calibration sample to initialize
-        # class unless you are fitting the model?? maybe
+        # You shouldn't have to define a calibration sample to initialize
+        # class unless you are fitting the model
 
         self.lnJz = lnJz
         self.age = age
@@ -157,8 +157,34 @@ class KinematicAgeSpline:
 
 
     def fit_mono_spline(self, ln_dens_knots=jnp.linspace(-1, 15, 15), age_knots=jnp.linspace(-1, 15, 5),\
-                        num_warmup=1000, num_samples=1000, num_chains=2, progress_bar=True):
+                        num_warmup=1000, num_samples=1000, num_chains=2, progress_bar=True, **kwargs):
         
+        """
+        Fit the monotonic age--lnJz spline to the calibration data.
+        This method wraps `numpyro.infer.MCMC`.
+
+        Parameters
+        ---------
+        ln_dens_knots : jnp.array
+            Age density knot values (Gyr). Bulk should range between 0 and 14.
+        age_knots : jnp.array
+            Age knot values (Gyr). Bulk should range between 0 and 14.
+        num_warmup : int
+            Number of warmup sampling steps.
+        num_samples : int
+            Number of samples after sampling steps.
+        num_chains : int
+            Number of chains.
+        progress_bar : Boolean
+            Progress bar
+        **kwargs : dict
+            Dictionary of arguments to be passed to numpyro.infer.MCMC.
+
+        Returns
+        -------
+        None
+        """
+            
         import arviz as az
 
         self.set_initial_knots(age_knots, ln_dens_knots)
@@ -169,6 +195,7 @@ class KinematicAgeSpline:
             num_samples=num_samples,
             num_chains=num_chains,
             progress_bar=progress_bar,
+            **kwargs,
         )
 
         print('Fitting line...')

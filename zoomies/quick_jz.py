@@ -38,11 +38,11 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
 
     if mwmodel == '2022':
         mw = gp.MilkyWayPotential2022()
-        # print('Using MW 2022 model...')
 
     else:
-        # print('Warning: using old MW potential')
-        mw = gp.MilkyWayPotential()
+        print('Custom potential')
+        #mw = gp.MilkyWayPotential()
+        mw = mwmodel
     
     c = g.get_skycoord()
     galcen = c.transform_to(coord.Galactocentric(galcen_v_sun=[8, 254, 8] * u.km / u.s, galcen_distance=8.275 * u.kpc))
