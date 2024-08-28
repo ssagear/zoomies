@@ -1,4 +1,4 @@
-Welcome to Lumache's documentation!
+Welcome to zoomies' documentation!
 ===================================
 
 **zoomies** is a Python library
