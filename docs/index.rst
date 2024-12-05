@@ -12,5 +12,5 @@ Contents
 .. toctree::
 
    usage
-   tutorials
+   tutorials/Main_Kinematic_Age_Spline.ipynb
    api
