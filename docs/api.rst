@@ -1,7 +1,4 @@
 API
 ===
 
-.. autosummary::
-   :toctree: generated
-
-   zoomies
+.. autofunction:: zoomies.KinematicAgeSpline
