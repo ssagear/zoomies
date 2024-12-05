@@ -17,6 +17,12 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    "sphinx.ext.napoleon",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.todo",
+    "matplotlib.sphinxext.plot_directive",
+    "nbsphinx",
+    "rtds_action",
 ]
 
 intersphinx_mapping = {
@@ -33,3 +39,9 @@ html_theme = 'sphinx_rtd_theme'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
+
+
+# autodocs
+autoclass_content = "both"
+autosummary_generate = True
+autodoc_docstring_signature = True
