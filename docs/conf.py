@@ -17,11 +17,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
-    "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    "sphinx.ext.todo",
-    "nbsphinx",
-    "rtds_action",
 ]
 
 intersphinx_mapping = {
