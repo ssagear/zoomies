@@ -20,7 +20,6 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
     "sphinx.ext.todo",
-    "matplotlib.sphinxext.plot_directive",
     "nbsphinx",
     "rtds_action",
 ]
