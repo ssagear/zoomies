@@ -1,4 +1,4 @@
 API
 ===
 
-.. autofunction:: zoomies.KinematicAgeSpline
+.. autofunction:: zoomies.KinematicAgeSpline.fit_mono_spline
