@@ -1,4 +1,4 @@
-Usage
+Installation
 =====
 
 .. _install:
@@ -6,7 +6,7 @@ Usage
 Installation
 ------------
 
-To use zoomies, first install it using pip:
+To use zoomies, install it using pip:
 
 .. code-block:: console
 

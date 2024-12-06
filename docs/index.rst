@@ -1,10 +1,9 @@
-Welcome to zoomies' documentation!
+Welcome to the ``zoomies`` documentation!
 ===================================
 
-Stars get the zoomies too. **zoomies** is a kinematic age prediction package that uses Gaia parallax, proper motion, and radial velocity along with a Milky Way potential model to produce a stellar age prediction based on its galactic orbit.
+Stars get the zoomies too. ``zoomies`` is a kinematic age prediction package that uses Gaia parallax, proper motion, and radial velocity along with a Milky Way potential model to produce a stellar age prediction based on its galactic orbit.
 
-Check out the :doc:`usage` section for further information, including
-how to :ref:`install` the project.
+For more detailed information, please see the paper [Sagear et al. (2024)](https://iopscience.iop.org/article/10.3847/1538-4357/ad8b26).
 
 Contents
 --------
@@ -13,8 +12,18 @@ Contents
    :titlesonly:
    :maxdepth: 1
 
-   usage
+   installation
+   api
+   cite
+
+
+Tutorials
+--------
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   
    tutorials/Main_Kinematic_Age_Spline
    tutorials/get_age_predictions
-   api
 

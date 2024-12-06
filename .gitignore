@@ -1,9 +1,9 @@
 # temp spline model pickle files
 *.pickle
 dist/*
-MSTO_spline_model/*
+docs/MSTO_spline_model/*
 MSTO_spline_model.zip
-RGB_spline_model/*
+docs/RGB_spline_model/*
 RGB_spline_model.zip
 docs/tutorials/data/*
 docs/tutorials/data.zip
