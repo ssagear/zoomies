@@ -12,5 +12,10 @@ Contents
 .. toctree::
 
    usage
-   tutorials/Main_Kinematic_Age_Spline.ipynb
+   ../tutorials/Main_Kinematic_Age_Spline.ipynb
    api
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
