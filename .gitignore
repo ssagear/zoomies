@@ -5,6 +5,7 @@ MSTO_spline_model/*
 MSTO_spline_model.zip
 RGB_spline_model/*
 RGB_spline_model.zip
-tutorials/data/*
-tutorials/data.zip
-test_tutorial.ipynb
+docs/tutorials/data/*
+docs/tutorials/data.zip
+docs/tutorials/test_tutorial.ipynb
+docs/_build
