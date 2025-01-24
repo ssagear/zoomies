@@ -256,6 +256,7 @@ class KinematicAgeSpline:
         -------
         None
         """
+        
 
         self.grid = eval_grid
         
