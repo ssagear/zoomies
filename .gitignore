@@ -9,3 +9,5 @@ docs/tutorials/data/*
 docs/tutorials/data.zip
 docs/tutorials/test_tutorial.ipynb
 docs/_build
+.DS_Store
+zoomies/__pycache__/
