@@ -15,6 +15,8 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
     
     """
 
+    print('Starting Jz calculation...')
+
     import astropy.coordinates as coord
     import astropy.table as at
     import astropy.units as u
@@ -27,7 +29,7 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
     import gala.dynamics as gd
     import gala.potential as gp
     from gala.units import galactic
-    from gala.dynamics.actionangle.tests.staeckel_helpers import galpy_find_actions_staeckel
+    # from gala.dynamics.actionangle.tests.staeckel_helpers import galpy_find_actions_staeckel
     from pyia import GaiaData
 
     import os
@@ -50,7 +52,7 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
 
     if method=='galpy':
 
-        # print('Calculating actions with galpy...')
+        print('Calculating actions with galpy...')
 
         aaf = galpy_find_actions_staeckel(mw, w)
         Jz = aaf['actions'][:, 2]
@@ -59,14 +61,15 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
 
     elif method=='agama':
 
-        # print('Calculating actions with agama...')
+        print('Calculating actions with agama...')
 
-        import agama
+        # import agama
 
-        agama.setUnits(mass=u.Msun, length=u.kpc, time=u.Myr)
-        agama_pot = mw.as_interop("agama")
-        af = agama.ActionFinder(agama_pot)
-        Jr, Jz, Jphi = af(w.w(galactic).T).T * 1000 # agama units are different from galpy
+        # agama.setUnits(mass=u.Msun, length=u.kpc, time=u.Myr)
+        # agama_pot = mw.as_interop("agama")
+        # af = agama.ActionFinder(agama_pot)
+        # Jr, Jz, Jphi = af(w.w(galactic).T).T * 1000 # agama units are different from galpy
+        Jr, Jz, Jphi = 1,2,3
         
     else:
         print('you have to pick galpy or agama')

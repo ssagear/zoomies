@@ -8,6 +8,7 @@ RGB_spline_model.zip
 docs/tutorials/data/*
 docs/tutorials/data.zip
 docs/tutorials/test_tutorial.ipynb
+docs/tutorials/.ipynb_checkpoints/
 docs/_build
 .DS_Store
 zoomies/__pycache__/
