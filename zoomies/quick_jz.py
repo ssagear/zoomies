@@ -33,6 +33,7 @@ def galpy_find_actions_staeckel(potential, w, mean=True, delta=None, ro=None, vo
     import numpy as np
     import astropy.table as at
     import astropy.units as u
+    import astropy.coordinates as coord
     from collections.abc import Iterable
     from gala.dynamics.actionangle import get_staeckel_fudge_delta
     from galpy.actionAngle import actionAngleStaeckel
