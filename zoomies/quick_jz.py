@@ -1,7 +1,99 @@
+def galpy_find_actions_staeckel(potential, w, mean=True, delta=None, ro=None, vo=None):
+    """
+    Function from a previous version of Gala! pre-2023
 
-def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None):
+    Compute approximate actions, angles, and frequencies using the Staeckel
+    Fudge as implemented in Galpy. If you use this function, please also cite
+    Galpy in your work (Bovy 2015).
+
+    Parameters
+    ----------
+    potential : potential-like
+        A Gala potential instances.
+    w : `~gala.dynamics.PhaseSpacePosition` or `~gala.dynamics.Orbit`
+        Either a set of initial conditions / phase-space positions, or a set of
+        orbits computed in the input potential.
+    mean : bool (optional)
+        If an `~gala.dynamics.Orbit` is passed in, take the mean over actions
+        and frequencies.
+    delta : numeric, array-like (optional)
+        The focal length parameter, ∆, used by the Staeckel fudge. This is
+        computed if not provided.
+    ro : quantity-like (optional)
+    vo : quantity-like (optional)
+
+    Returns
+    -------
+    aaf : `astropy.table.QTable`
+        An Astropy table containing the actions, angles, and frequencies for
+        each input phase-space position or orbit.
 
     """
+
+    import astropy.table as at
+    from collections.abc import Iterable
+    from gala.dynamics.actionangle import get_staeckel_fudge_delta
+    from galpy.actionAngle import actionAngleStaeckel
+    from gala.dynamics import Orbit
+
+
+    delta = get_staeckel_fudge_delta(potential, w)
+    galpy_potential = potential.as_interop("galpy")
+
+    if isinstance(galpy_potential, list):
+        ro = galpy_potential[0]._ro * u.kpc
+        vo = galpy_potential[0]._vo * u.km / u.s
+    else:
+        ro = galpy_potential._ro * u.kpc
+        vo = galpy_potential._vo * u.km / u.s
+
+
+    if not isinstance(w, Orbit):
+        w = Orbit(w.pos[None], w.vel[None], t=[0.0] * potential.units["time"])
+
+
+        if w.norbits == 1:
+            iter_ = [w]
+        else:
+            iter_ = w.orbit_gen()
+
+
+    if isinstance(delta, u.Quantity):
+        delta = np.atleast_1d(delta)
+
+    if not isinstance(delta, Iterable):
+        delta = [delta] * w.norbits
+
+    if len(delta) != w.norbits:
+        raise ValueError(
+            "Input delta must have same shape as the inputted number of orbits"
+        )
+    
+    rows = []
+
+    for w_, delta_ in zip(iter_, delta):
+        o = w_.to_galpy_orbit(ro, vo)
+        aAS = actionAngleStaeckel(pot=galpy_potential, delta=delta_)
+
+        aaf = aAS.actionsFreqsAngles(o)
+        aaf = {
+            "actions": np.array(aaf[:3]).T * ro * vo,
+            "freqs": np.array(aaf[3:6]).T * vo / ro,
+            "angles": coord.Angle(np.array(aaf[6:]).T * u.rad),
+        }
+        if mean:
+            aaf["actions"] = np.nanmean(aaf["actions"], axis=0)
+            aaf["freqs"] = np.nanmean(aaf["freqs"], axis=0)
+            aaf["angles"] = aaf["angles"][0]
+        rows.append(aaf)
+    
+    return at.QTable(rows=rows)
+
+
+def calc_jz(gaia_table, method="galpy", mwmodel="2022", write=False, fname=None):
+
+    """
+    
     Calculates Jz using Gala for a star with a row of Gaia data.
 
     Parameters
@@ -15,13 +107,8 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
     
     """
 
-    print('Starting Jz calculation...')
-
     import astropy.coordinates as coord
-    import astropy.table as at
     import astropy.units as u
-    import matplotlib as mpl
-    import matplotlib.pyplot as plt
     import numpy as np
 
     # gala
@@ -29,7 +116,6 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
     import gala.dynamics as gd
     import gala.potential as gp
     from gala.units import galactic
-    # from gala.dynamics.actionangle.tests.staeckel_helpers import galpy_find_actions_staeckel
     from pyia import GaiaData
 
     import os
@@ -37,13 +123,13 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
 
 
     g = GaiaData(gaia_table)
+    
 
     if mwmodel == '2022':
         mw = gp.MilkyWayPotential2022()
 
     else:
         print('Custom potential')
-        #mw = gp.MilkyWayPotential()
         mw = mwmodel
     
     c = g.get_skycoord()
@@ -59,17 +145,17 @@ def calc_jz(gaia_table, method="agama", mwmodel="2022", write=False, fname=None)
         Jphi = aaf['actions'][:, 1]
         Jr = aaf['actions'][:, 0]
 
+
     elif method=='agama':
 
-        print('Calculating actions with agama...')
+        raise NotImplementedError('Action calculation with agama is not currently supported due to install issues.')
 
-        # import agama
+        import agama
 
-        # agama.setUnits(mass=u.Msun, length=u.kpc, time=u.Myr)
-        # agama_pot = mw.as_interop("agama")
-        # af = agama.ActionFinder(agama_pot)
-        # Jr, Jz, Jphi = af(w.w(galactic).T).T * 1000 # agama units are different from galpy
-        Jr, Jz, Jphi = 1,2,3
+        agama.setUnits(mass=u.Msun, length=u.kpc, time=u.Myr)
+        agama_pot = mw.as_interop("agama")
+        af = agama.ActionFinder(agama_pot)
+        Jr, Jz, Jphi = af(w.w(galactic).T).T * 1000 # agama units are different from galpy
         
     else:
         print('you have to pick galpy or agama')
