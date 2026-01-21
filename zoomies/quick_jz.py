@@ -31,6 +31,7 @@ def galpy_find_actions_staeckel(potential, w, mean=True, delta=None, ro=None, vo
     """
 
     import astropy.table as at
+    import astropy.units as u
     from collections.abc import Iterable
     from gala.dynamics.actionangle import get_staeckel_fudge_delta
     from galpy.actionAngle import actionAngleStaeckel
@@ -109,10 +110,8 @@ def calc_jz(gaia_table, method="galpy", mwmodel="2022", write=False, fname=None)
 
     import astropy.coordinates as coord
     import astropy.units as u
-    import numpy as np
 
     # gala
-    import gala.coordinates as gc
     import gala.dynamics as gd
     import gala.potential as gp
     from gala.units import galactic
