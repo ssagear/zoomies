@@ -22,7 +22,7 @@ import numpyro
 from numpyro import distributions as dist, infer
 numpyro.set_host_device_count(4)
 
-# import arviz as az
+import arviz as az
 
 from .quick_jz import calc_jz
 
