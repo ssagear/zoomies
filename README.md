@@ -2,6 +2,8 @@
 
 ![logo](docs/zoomies.png)
 
+**Update 02/10/26: Version 1.0.0 released on PyPI. Dependency issues with "pip install zoomies" should be fixed!**
+
 Stars get the zoomies too. This is a dynamical age prediction package that uses Gaia parallax, proper motion, and radial velocity along with a Milky Way potential model to produce a stellar age prediction based on its galactic orbit.
 
 The documentation for `zoomies` is hosted at https://zoomies.readthedocs.io/en/latest/. See the documentation for tutorials, usage examples, and more!
